@@ -9,6 +9,8 @@ class Track {
     this.genre,
     this.streamUrl,
     this.album,
+    this.sourceUrl,
+    this.license,
   });
 
   final String id;
@@ -20,9 +22,21 @@ class Track {
   final String? genre;
   final String? streamUrl;
   final String? album;
+  final String? sourceUrl;
+  final String? license;
 
   String get key => '$source:$id';
   bool get isLive => source == 'radio';
+
+  String get sourceLabel => switch (source) {
+        'audius' => 'Audius',
+        'archive' => 'Internet Archive',
+        'openverse' => 'Openverse',
+        'ccmixter' => 'ccMixter',
+        'radio' => 'Radio Browser',
+        'local' => 'Musik lokal',
+        _ => source,
+      };
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -34,6 +48,8 @@ class Track {
         if (genre != null) 'genre': genre,
         if (streamUrl != null) 'streamUrl': streamUrl,
         if (album != null) 'album': album,
+        if (sourceUrl != null) 'sourceUrl': sourceUrl,
+        if (license != null) 'license': license,
       };
 
   factory Track.fromJson(Map<String, dynamic> json) => Track(
@@ -48,6 +64,8 @@ class Track {
         genre: json['genre']?.toString(),
         streamUrl: json['streamUrl']?.toString(),
         album: json['album']?.toString(),
+        sourceUrl: json['sourceUrl']?.toString(),
+        license: json['license']?.toString(),
       );
 }
 

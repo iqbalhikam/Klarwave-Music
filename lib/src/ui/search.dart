@@ -21,6 +21,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Timer? _debounce;
   Future<List<Track>>? _results;
   String _mode = 'lagu';
+  String _filter = 'semua';
 
   static const _genres = [
     'Pop',
@@ -33,6 +34,22 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     'Chill',
     'House',
     'Reggae',
+  ];
+
+  static const _archiveQueries = [
+    'Indonesia',
+    'Keroncong',
+    'Gamelan',
+    'Dangdut',
+    'Lagu daerah',
+  ];
+
+  static const _sources = [
+    ('semua', 'Semua'),
+    ('audius', 'Audius'),
+    ('archive', 'Arsip'),
+    ('openverse', 'Openverse'),
+    ('ccmixter', 'ccMixter'),
   ];
 
   @override
@@ -58,7 +75,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
     setState(() {
       _results = _mode == 'lagu'
-          ? ref.read(audiusProvider).searchTracks(query)
+          ? ref
+              .read(aggregatorProvider)
+              .search(query, filter: _filter)
           : ref.read(radioProvider).stations(query: query);
     });
   }
@@ -74,6 +93,20 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     _controller.selection =
         TextSelection.collapsed(offset: _controller.text.length);
     _run(genre);
+  }
+
+  void _useArchive(String query) {
+    _filter = 'archive';
+    _controller.text = query;
+    _controller.selection =
+        TextSelection.collapsed(offset: _controller.text.length);
+    _run(query);
+  }
+
+  void _setFilter(String filter) {
+    if (filter == _filter) return;
+    setState(() => _filter = filter);
+    _run(_controller.text);
   }
 
   void _play(List<Track> tracks, int index) {
@@ -159,11 +192,29 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ),
                   const Spacer(),
                   Text(
-                    _mode == 'lagu' ? 'Audius' : 'Radio Browser',
+                    _mode == 'lagu' ? '4 sumber gratis' : 'Radio Browser',
                     style: const TextStyle(fontSize: 10.5, color: Colors.white30),
                   ),
                 ],
               ),
+              if (_mode == 'lagu') ...[
+                const SizedBox(height: 10),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (final (id, label) in _sources) ...[
+                        GlassChip(
+                          label: label,
+                          selected: _filter == id,
+                          onTap: () => _setFilter(id),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 4),
             ],
           ),
@@ -197,6 +248,29 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 GlassChip(label: genre, onTap: () => _useGenre(genre)),
             ],
           ),
+          const SizedBox(height: 22),
+          const Text(
+            'Arsip Indonesia',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: Colors.white38,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final query in _archiveQueries)
+                GlassChip(
+                  label: query,
+                  icon: Icons.library_music_rounded,
+                  onTap: () => _useArchive(query),
+                ),
+            ],
+          ),
           const SizedBox(height: 24),
           EmptyState(
             icon: _mode == 'lagu'
@@ -206,7 +280,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ? 'Temukan lagu berikutnya'
                 : 'Dengarkan radio dunia',
             message: _mode == 'lagu'
-                ? 'Ketik judul atau artis. Katalog musik gratis dari Audius siap diputar.'
+                ? 'Ketik judul atau artis. Hasil digabung dari Audius, Internet Archive, Openverse, dan ccMixter.'
                 : 'Ketik nama stasiun, atau ketuk genre di atas untuk mencari stasiun dengan tag tersebut.',
           ),
         ],
@@ -251,7 +325,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             return TrackTile(
               track: track,
               liked: store.isLiked(track),
-              subtitle: track.isLive ? track.artist : null,
+              subtitle: track.isLive
+                  ? track.artist
+                  : track.artist == track.sourceLabel
+                      ? track.sourceLabel
+                      : '${track.artist} · ${track.sourceLabel}',
               onTap: () => _play(tracks, i),
               onLike: () => store.toggleLike(track),
               onMore: () => showTrackMenu(context, ref, track),

@@ -10,7 +10,8 @@ Dibangun dengan **Flutter/Dart** — satu codebase untuk Android dan iOS, dikomp
 ## Fitur
 
 - **Beranda** — tangga lagu trending (minggu/bulan/sepanjang masa), riwayat putar, radio langsung.
-- **Cari** — lagu & artis dari katalog Audius, stasiun radio dari Radio Browser, filter genre.
+- **Cari** — satu pencarian menggabungkan Audius, Internet Archive, Openverse, dan ccMixter,
+  dengan filter per sumber; stasiun radio dari Radio Browser; filter genre dan arsip Indonesia.
 - **Pemutar penuh** — artwork besar, kontrol play/pause, prev/next, shuffle, repeat (semua/1 lagu),
   seek, antrean, dan **timer tidur**.
 - **Lirik tersinkronisasi** — diambil dari LRCLIB, auto-scroll dan highlight baris aktif.
@@ -27,11 +28,31 @@ distribusikan ulang; proyek ini memakai sumber yang memang bebas dan legal:
 | Kebutuhan | Sumber | Catatan |
 | --- | --- | --- |
 | Musik on-demand | [Audius API](https://docs.audius.org) | Streaming gratis, tanpa API key |
+| Arsip audio | [Internet Archive](https://archive.org/developers/) | Domain publik & CC, tanpa API key |
+| Audio CC | [Openverse](https://api.openverse.org/v1/) | Mengindeks Jamendo, Wikimedia, Freesound; tanpa API key |
+| Remix CC | [ccMixter](https://ccmixter.org/query-api) | Komunitas remix Creative Commons |
 | Radio internet | [Radio Browser](https://www.radio-browser.info) | Direktori stasiun publik |
 | Lirik | [LRCLIB](https://lrclib.net) | Database lirik komunitas, tanpa API key |
 
-Hak cipta lirik dan rekaman tetap milik pemiliknya masing-masing. Jangan menambahkan
-sumber yang melanggar ketentuan layanan pihak ketiga.
+Atribusi: Openverse mewajibkan kredit pembuat dan lisensi; aplikasi menampilkannya di
+menu **Sumber & lisensi** setiap lagu dan menautkan halaman asal. Sebutkan juga bahwa
+data pencarian berasal dari Openverse. Hak cipta lirik dan rekaman tetap milik
+pemiliknya masing-masing; jangan menambahkan sumber yang melanggar ketentuan layanan
+pihak ketiga.
+
+### Cakupan katalog dan target 95%
+
+Kombinasi sumber gratis ini memperluas katalog, tetapi **tidak bisa mencapai 95% lagu
+Indonesia mainstream**. Lagu milik label besar tidak tersedia di Audius, Internet
+Archive, Openverse, maupun ccMixter. Perkiraan realistis:
+
+- Audius + arsip + Openverse + ccMixter: sebagian kecil katalog Indonesia modern,
+  lebih kuat untuk indie, elektronik, remix, lagu daerah, keroncong, dan rekaman lawas.
+- Radio Browser: banyak stasiun Indonesia, tetapi hanya siaran langsung.
+- Impor musik lokal: satu-satunya cara mendekati 95% untuk koleksi pribadi pengguna.
+
+Untuk katalog label yang lengkap diperlukan lisensi komersial (mis. penyedia B2B)
+atau integrasi langganan pengguna; keduanya di luar cakupan aplikasi gratis ini.
 
 ## Menjalankan di lokal
 
@@ -81,13 +102,13 @@ Langkah rilis:
 ```bash
 git init
 git add .
-git commit -m "feat: Klarwave Music 1.0.0"
+git commit -m "feat: Klarwave Music 1.1.0"
 git branch -M main
 git remote add origin https://github.com/<user>/<repo>.git
 git push -u origin main
 
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 Job iOS hanya berjalan lewat **Run workflow** (manual) dan menghasilkan
@@ -145,8 +166,12 @@ Mengganti nama lagi berarti mengganti `name` di `pubspec.yaml`, label Android/iO
 
 ## Keterbatasan
 
-- Katalog bergantung pada ketersediaan API Audius/Radio Browser; tangani error jaringan
-  dengan tombol coba lagi (sudah disediakan).
+- Katalog bergantung pada ketersediaan API Audius, Internet Archive, Openverse, ccMixter,
+  dan Radio Browser; sumber yang gagal diabaikan dan sumber lain tetap tampil.
+- Openverse anonim dibatasi 20 permintaan/menit dan 200/hari; hasil di-cache 10 menit.
+  Untuk pemakaian berat, daftarkan token Openverse dan tambahkan header `Authorization`.
+- Kualitas dan ketersediaan stream arsip bervariasi; sebagian rekaman lama mono atau
+  memiliki metadata tidak lengkap.
 - Lirik tidak tersedia untuk semua lagu (LRCLIB berbasis kontribusi).
 - Radio umumnya siaran langsung: seek tidak tersedia.
 - Artwork notifikasi mengikuti URL artwork dari sumber.

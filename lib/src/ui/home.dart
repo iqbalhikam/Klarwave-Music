@@ -18,6 +18,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   String _time = 'week';
   late Future<List<Track>> _trending;
   late Future<List<Track>> _radios;
+  late Future<List<Track>> _archive;
 
   @override
   void initState() {
@@ -27,13 +28,17 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   void _reload() {
     _trending = ref.read(audiusProvider).trending(time: _time, limit: 24);
-    _radios = ref.read(radioProvider).stations(limit: 12);
+    _radios = ref.read(radioProvider).stations(
+          limit: 12,
+          countryCode: 'ID',
+        );
+    _archive = ref.read(archiveProvider).indonesian(limit: 10);
   }
 
   Future<void> _refresh() async {
     setState(_reload);
     try {
-      await Future.wait([_trending, _radios]);
+      await Future.wait([_trending, _radios, _archive]);
     } catch (_) {}
   }
 
@@ -160,6 +165,49 @@ class _HomePageState extends ConsumerState<HomePage> {
               );
             },
           ),
+          const SizedBox(height: 26),
+          const SectionTitle(
+            'Arsip Indonesia',
+            trailing: Text(
+              'Domain publik & CC',
+              style: TextStyle(fontSize: 10.5, color: Colors.white38),
+            ),
+          ),
+          const SizedBox(height: 12),
+          FutureBuilder<List<Track>>(
+            future: _archive,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return const EmptyState(
+                  icon: Icons.library_music_rounded,
+                  title: 'Arsip tidak tersedia',
+                  message: 'Internet Archive sedang tidak dapat dihubungi.',
+                );
+              }
+              final tracks = snapshot.data;
+              if (tracks == null) return const LoadingRows(count: 2);
+              if (tracks.isEmpty) {
+                return const EmptyState(
+                  icon: Icons.library_music_rounded,
+                  title: 'Belum ada arsip',
+                  message: 'Coba cari lewat halaman Cari dengan filter Arsip.',
+                );
+              }
+              return SizedBox(
+                height: 178,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: tracks.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, i) => CoverCard(
+                    track: tracks[i],
+                    width: 128,
+                    onTap: () => _play(tracks, i),
+                  ),
+                ),
+              );
+            },
+          ),
           if (recents.isNotEmpty) ...[
             const SizedBox(height: 26),
             SectionTitle(
@@ -190,7 +238,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
           ],
           const SizedBox(height: 26),
-          const SectionTitle('Radio langsung'),
+          const SectionTitle('Radio Indonesia'),
           const SizedBox(height: 12),
           FutureBuilder<List<Track>>(
             future: _radios,
@@ -255,7 +303,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           const SizedBox(height: 28),
           const Center(
             child: Text(
-              'Musik dari Audius · Radio dari Radio Browser',
+              'Audius · Internet Archive · Openverse · ccMixter · Radio Browser',
               style: TextStyle(fontSize: 10.5, color: Colors.white38),
             ),
           ),

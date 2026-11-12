@@ -20,6 +20,7 @@ class RadioApi {
   Future<List<Track>> stations({
     String? query,
     String? tag,
+    String? countryCode,
     int limit = 40,
   }) async {
     final params = <String, String>{
@@ -29,6 +30,8 @@ class RadioApi {
       'reverse': 'true',
       if (query != null && query.isNotEmpty) 'name': query,
       if (tag != null && tag.isNotEmpty) 'tag': tag,
+      if (countryCode != null && countryCode.isNotEmpty)
+        'countrycode': countryCode,
     };
 
     for (var attempt = 0; attempt < _mirrors.length; attempt++) {

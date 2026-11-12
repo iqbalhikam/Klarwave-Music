@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models.dart';
 import '../providers.dart';
@@ -51,6 +52,18 @@ Future<void> showTrackMenu(
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontSize: 12, color: kMuted),
                       ),
+                      const SizedBox(height: 3),
+                      Text(
+                        track.isLive
+                            ? 'Radio langsung'
+                            : '${track.sourceLabel}${track.license == null ? '' : ' · ${track.license}'}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          color: Colors.white38,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -90,6 +103,57 @@ Future<void> showTrackMenu(
               onTap: () {
                 ref.read(playerProvider).playTrack(track);
                 Navigator.of(sheetContext).pop();
+              },
+            ),
+            if (track.sourceUrl != null)
+              _SheetAction(
+                icon: Icons.open_in_new_rounded,
+                label: 'Sumber & lisensi',
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _showAttribution(context, track);
+                },
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> _showAttribution(BuildContext context, Track track) async {
+  await showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (_) => Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: GlassPanel(
+        radius: 30,
+        opacity: 0.16,
+        blur: 36,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: Text(
+                'Sumber & lisensi',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+            ),
+            _InfoRow(label: 'Sumber', value: track.sourceLabel),
+            if (track.license != null && track.license!.isNotEmpty)
+              _InfoRow(label: 'Lisensi', value: track.license!),
+            if (track.album != null && track.album!.isNotEmpty)
+              _InfoRow(label: 'Album', value: track.album!),
+            const SizedBox(height: 8),
+            _SheetAction(
+              icon: Icons.open_in_new_rounded,
+              label: 'Buka halaman sumber',
+              onTap: () async {
+                final uri = Uri.tryParse(track.sourceUrl!);
+                if (uri == null) return;
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
               },
             ),
           ],
@@ -335,6 +399,38 @@ Future<void> showQueueSheet(BuildContext context, WidgetRef ref) async {
       ),
     ),
   );
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 74,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: kMuted),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 12.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SheetAction extends StatelessWidget {
