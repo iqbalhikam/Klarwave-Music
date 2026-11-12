@@ -102,13 +102,13 @@ Langkah rilis:
 ```bash
 git init
 git add .
-git commit -m "feat: Klarwave Music 1.1.0"
+git commit -m "feat: Klarwave Music 1.1.1"
 git branch -M main
 git remote add origin https://github.com/<user>/<repo>.git
 git push -u origin main
 
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.1.1
+git push origin v1.1.1
 ```
 
 Job iOS hanya berjalan lewat **Run workflow** (manual) dan menghasilkan

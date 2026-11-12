@@ -15,4 +15,17 @@ New-Item -ItemType Directory -Force 'android/app/src/main/kotlin/com/klarwave/mu
 Copy-Item -Force 'platform_overrides/android/app/src/main/kotlin/com/klarwave/music/MainActivity.kt' 'android/app/src/main/kotlin/com/klarwave/music/MainActivity.kt'
 Copy-Item -Force 'platform_overrides/ios/Runner/Info.plist' 'ios/Runner/Info.plist'
 
+# Lint rilis AGP bisa crash saat menganalisis plugin (mis. url_launcher).
+# Lint tidak memengaruhi APK, jadi lewati untuk build release.
+$lintBlock = @'
+
+android {
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+}
+'@
+Add-Content -Path 'android/app/build.gradle.kts' -Value $lintBlock
+
 Write-Host 'Folder android/ dan ios/ siap dipakai.'

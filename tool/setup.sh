@@ -23,4 +23,16 @@ cp platform_overrides/android/app/src/main/kotlin/com/klarwave/music/MainActivit
 
 cp platform_overrides/ios/Runner/Info.plist ios/Runner/Info.plist
 
+# Lint rilis AGP bisa crash saat menganalisis plugin (mis. url_launcher).
+# Lint tidak memengaruhi APK, jadi lewati untuk build release.
+cat >> android/app/build.gradle.kts <<'EOF'
+
+android {
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+}
+EOF
+
 echo "Folder android/ dan ios/ siap dipakai."
