@@ -156,6 +156,14 @@ Future<void> _showAttribution(BuildContext context, Track track) async {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               },
             ),
+            if (track.source == 'openverse')
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'Data pencarian audio oleh Openverse',
+                  style: TextStyle(fontSize: 10.5, color: Colors.white38),
+                ),
+              ),
           ],
         ),
       ),
