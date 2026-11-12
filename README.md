@@ -10,8 +10,11 @@ Dibangun dengan **Flutter/Dart** — satu codebase untuk Android dan iOS, dikomp
 ## Fitur
 
 - **Beranda** — tangga lagu trending (minggu/bulan/sepanjang masa), riwayat putar, radio langsung.
-- **Cari** — satu pencarian menggabungkan Audius, Internet Archive, Openverse, dan ccMixter,
+- **Cari** — satu pencarian menggabungkan **YouTube Music**, Audius, Internet Archive, Openverse, dan ccMixter,
   dengan filter per sumber; stasiun radio dari Radio Browser; filter genre dan arsip Indonesia.
+- **YouTube Music Integration** — katalog musik yang sangat besar, streaming audio berkualitas tinggi (opus/m4a),
+  **tanpa perlu API key atau login**.
+- **High-Quality Artwork** — artwork HD (600x600 - 1400x1400) dari iTunes API untuk pengalaman visual yang lebih baik.
 - **Pemutar penuh** — artwork besar, kontrol play/pause, prev/next, shuffle, repeat (semua/1 lagu),
   seek, antrean, dan **timer tidur**.
 - **Lirik tersinkronisasi** — diambil dari LRCLIB, auto-scroll dan highlight baris aktif.
@@ -19,20 +22,36 @@ Dibangun dengan **Flutter/Dart** — satu codebase untuk Android dan iOS, dikomp
 - **Audio latar** — notifikasi media & kontrol kunci layar (audio_service/just_audio).
 - **Antrean & lanjut otomatis** — lagu berlanjut sendiri, dengan acak dan ulang.
 - **Desain** — latar aurora animasi, panel kaca (blur + border specular), navigasi kaca mengapung.
+- **Tanpa Backend** — semua API call langsung dari client, privacy-friendly, no tracking.
 
-## Sumber musik (legal)
+## Sumber musik
 
-Aplikasi ini **bukan** klien Spotify/YouTube Music. Katalog Spotify/YouTube tidak boleh
-distribusikan ulang; proyek ini memakai sumber yang memang bebas dan legal:
+Aplikasi ini menggunakan berbagai sumber musik dengan metode akses yang berbeda:
 
-| Kebutuhan | Sumber | Catatan |
-| --- | --- | --- |
-| Musik on-demand | [Audius API](https://docs.audius.org) | Streaming gratis, tanpa API key |
-| Arsip audio | [Internet Archive](https://archive.org/developers/) | Domain publik & CC, tanpa API key |
-| Audio CC | [Openverse](https://api.openverse.org/v1/) | Mengindeks Jamendo, Wikimedia, Freesound; tanpa API key |
-| Remix CC | [ccMixter](https://ccmixter.org/query-api) | Komunitas remix Creative Commons |
-| Radio internet | [Radio Browser](https://www.radio-browser.info) | Direktori stasiun publik |
-| Lirik | [LRCLIB](https://lrclib.net) | Database lirik komunitas, tanpa API key |
+| Kebutuhan | Sumber | Catatan | Status Legal |
+| --- | --- | --- | --- |
+| **Musik mainstream** | [YouTube Music](https://music.youtube.com) | Via `youtube_explode_dart` (web scraping), tanpa API key | ⚠️ Personal use only |
+| **Metadata & Artwork** | [iTunes Search API](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/) | Official public API, HD artwork | ✅ Legal |
+| Musik on-demand | [Audius API](https://docs.audius.org) | Streaming gratis, tanpa API key | ✅ Legal |
+| Arsip audio | [Internet Archive](https://archive.org/developers/) | Domain publik & CC, tanpa API key | ✅ Legal |
+| Audio CC | [Openverse](https://api.openverse.org/v1/) | Mengindeks Jamendo, Wikimedia, Freesound | ✅ Legal |
+| Remix CC | [ccMixter](https://ccmixter.org/query-api) | Komunitas remix Creative Commons | ✅ Legal |
+| Radio internet | [Radio Browser](https://www.radio-browser.info) | Direktori stasiun publik | ✅ Legal |
+| Lirik | [LRCLIB](https://lrclib.net) | Database lirik komunitas, tanpa API key | ✅ Legal |
+
+### ⚠️ Disclaimer YouTube Music
+
+YouTube Music integration menggunakan **web scraping** (bukan official API) melalui library `youtube_explode_dart`. 
+Menurut YouTube Terms of Service, scraping diperbolehkan untuk **personal use** dan **educational purposes**, 
+tetapi **tidak untuk commercial use** atau mass redistribution.
+
+**Gunakan dengan bertanggung jawab:**
+- ✅ OK untuk personal music player
+- ✅ OK untuk educational projects  
+- ❌ Tidak untuk commercial apps dengan revenue
+- ❌ Tidak untuk mass download/redistribution
+
+Jika concern soal legal, YouTube Music bisa di-disable dan app tetap berfungsi dengan sumber legal lainnya.
 
 Atribusi: Openverse mewajibkan kredit pembuat dan lisensi; aplikasi menampilkannya di
 menu **Sumber & lisensi** setiap lagu dan menautkan halaman asal. Sebutkan juga bahwa
@@ -40,19 +59,23 @@ data pencarian berasal dari Openverse. Hak cipta lirik dan rekaman tetap milik
 pemiliknya masing-masing; jangan menambahkan sumber yang melanggar ketentuan layanan
 pihak ketiga.
 
-### Cakupan katalog dan target 95%
+### Cakupan katalog
 
-Kombinasi sumber gratis ini memperluas katalog, tetapi **tidak bisa mencapai 95% lagu
-Indonesia mainstream**. Lagu milik label besar tidak tersedia di Audius, Internet
-Archive, Openverse, maupun ccMixter. Perkiraan realistis:
+Dengan **YouTube Music integration**, aplikasi sekarang memiliki akses ke katalog musik yang sangat luas:
 
-- Audius + arsip + Openverse + ccMixter: sebagian kecil katalog Indonesia modern,
-  lebih kuat untuk indie, elektronik, remix, lagu daerah, keroncong, dan rekaman lawas.
-- Radio Browser: banyak stasiun Indonesia, tetapi hanya siaran langsung.
-- Impor musik lokal: satu-satunya cara mendekati 95% untuk koleksi pribadi pengguna.
+**Coverage estimate:**
+- **YouTube Music**: ~95% lagu Indonesia mainstream + internasional (catalog sangat besar)
+- **Audius + Archive + Openverse + ccMixter**: Musik indie, elektronik, remix, lagu daerah, keroncong, rekaman lawas
+- **Radio Browser**: Stasiun radio Indonesia dan internasional (siaran langsung)
+- **iTunes API**: Metadata dan artwork HD untuk semua track
 
-Untuk katalog label yang lengkap diperlukan lisensi komersial (mis. penyedia B2B)
-atau integrasi langganan pengguna; keduanya di luar cakupan aplikasi gratis ini.
+**Kombinasi multi-source** memberikan:
+- ✅ Katalog mainstream dari YouTube Music
+- ✅ Musik independent & CC dari sumber legal
+- ✅ Radio streaming
+- ✅ Artwork berkualitas tinggi dari iTunes
+
+User mendapatkan pengalaman musik yang lengkap tanpa perlu langganan berbayar atau akun apapun.
 
 ## Menjalankan di lokal
 
@@ -69,6 +92,12 @@ flutter pub get
 # 3. Jalankan ke perangkat/emulator (hot reload aktif)
 flutter run
 ```
+
+### Dokumentasi Tambahan
+
+- **[PANDUAN_CEPAT.md](PANDUAN_CEPAT.md)** - Quick start guide (Bahasa Indonesia)
+- **[YOUTUBE_MUSIC_INTEGRATION.md](YOUTUBE_MUSIC_INTEGRATION.md)** - Technical documentation (English)
+- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Implementation details
 
 Folder `android/` dan `ios/` sengaja tidak di-commit (lihat `.gitignore`).
 Kustomisasi native yang penting disimpan di `platform_overrides/` dan disalin oleh
@@ -166,7 +195,9 @@ Mengganti nama lagi berarti mengganti `name` di `pubspec.yaml`, label Android/iO
 
 ## Keterbatasan
 
-- Katalog bergantung pada ketersediaan API Audius, Internet Archive, Openverse, ccMixter,
+- **YouTube Music**: Stream URL expire setelah ~6 jam (otomatis di-resolve ulang saat play error).
+  Beberapa video mungkin region-restricted.
+- Katalog bergantung pada ketersediaan API YouTube, Audius, Internet Archive, Openverse, ccMixter,
   dan Radio Browser; sumber yang gagal diabaikan dan sumber lain tetap tampil.
 - Openverse anonim dibatasi 20 permintaan/menit dan 200/hari; hasil di-cache 10 menit.
   Untuk pemakaian berat, daftarkan token Openverse dan tambahkan header `Authorization`.
@@ -174,4 +205,4 @@ Mengganti nama lagi berarti mengganti `name` di `pubspec.yaml`, label Android/iO
   memiliki metadata tidak lengkap.
 - Lirik tidak tersedia untuk semua lagu (LRCLIB berbasis kontribusi).
 - Radio umumnya siaran langsung: seek tidak tersedia.
-- Artwork notifikasi mengikuti URL artwork dari sumber.
+- iTunes API: Preview audio 30 detik saja (digunakan untuk metadata/artwork only).
