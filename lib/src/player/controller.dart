@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../models.dart';
 import '../services/audius_api.dart';
@@ -11,6 +12,7 @@ import '../services/store.dart';
 
 class PlayerController extends ChangeNotifier {
   PlayerController({required this.store, required this.audius}) {
+    _yt = YoutubeExplode();
     _player.playbackEventStream.listen(
       (_) {},
       onError: (Object error, StackTrace stack) {
@@ -43,6 +45,7 @@ class PlayerController extends ChangeNotifier {
   final AppStore store;
   final AudiusApi audius;
   final AudioPlayer _player = AudioPlayer();
+  late final YoutubeExplode _yt;
 
   final List<Track> _queue = [];
   int _index = 0;
@@ -99,7 +102,19 @@ class PlayerController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final url = track.streamUrl ?? await audius.streamUrl(track.id);
+      String url;
+      
+      // Handle YouTube URLs
+      if (track.audioUrl != null && track.audioUrl!.startsWith('yt://')) {
+        final videoId = track.audioUrl!.substring(5); // Remove 'yt://' prefix
+        url = await _resolveYouTubeUrl(videoId);
+      } else if (track.streamUrl != null) {
+        url = track.streamUrl!;
+      } else {
+        // Fallback to Audius stream URL
+        url = await audius.streamUrl(track.id);
+      }
+      
       final tag = MediaItem(
         id: track.key,
         title: track.title,
@@ -113,11 +128,39 @@ class PlayerController extends ChangeNotifier {
       await _player.setAudioSource(source);
       await _player.play();
       await store.addRecent(track);
-    } catch (_) {
-      error = 'Tidak bisa memutar "${track.title}".';
+    } catch (e) {
+      error = 'Tidak bisa memutar "${track.title}". Error: $e';
     } finally {
       loading = false;
       notifyListeners();
+    }
+  }
+
+  /// Resolve YouTube video ID to direct audio stream URL
+  Future<String> _resolveYouTubeUrl(String videoId) async {
+    try {
+      final manifest = await _yt.videos.streamsClient.getManifest(videoId);
+      final audioOnly = manifest.audioOnly;
+      
+      if (audioOnly.isEmpty) {
+        throw Exception('Tidak ada audio stream tersedia');
+      }
+
+      // Prioritas: opus > m4a > mp4
+      var best = audioOnly.first;
+      for (final stream in audioOnly) {
+        if (stream.codec.mimeType.contains('opus')) {
+          best = stream;
+          break;
+        } else if (stream.codec.mimeType.contains('m4a') &&
+            !best.codec.mimeType.contains('opus')) {
+          best = stream;
+        }
+      }
+
+      return best.url.toString();
+    } catch (e) {
+      throw Exception('Gagal mendapatkan YouTube audio URL: $e');
     }
   }
 
@@ -236,6 +279,7 @@ class PlayerController extends ChangeNotifier {
     _disposed = true;
     _sleepTimer?.cancel();
     _player.dispose();
+    _yt.close();
     super.dispose();
   }
 }
